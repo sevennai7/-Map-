@@ -41,17 +41,27 @@
       "Walmart": { en: "Supermarket", de: "Supermarkt" }
     };
 
-    // Map setup
+    // Function to find category by partial name
+    function getCategory(name) {
+      for (const place in placeCategories) {
+        if (name.includes(place)) {  
+          return placeCategories[place][currentLang] || "Unknown Category";
+        }
+      }
+      return "Unknown Category";
+    }
+
+    // Map setup at center of the world
     var map = L.map('map').setView([0, 0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-    // Animate to center
+    // Animate map center on load
     setTimeout(() => { map.flyTo([0, 0], 2); }, 500);
 
     // Marker placeholder
     var userMarker = L.marker([0, 0]).addTo(map);
 
-    // Geocoder setup
+    // Geocoder setup with partial matching
     var geocoder = L.Control.geocoder({
       defaultMarkGeocode: false,
       placeholder: "Loading..."
@@ -61,8 +71,8 @@
       const name = e.geocode.name;
       map.setView(center, 12);
 
-      // Lookup category if exists
-      const category = placeCategories[name]?.[currentLang] || "Unknown Category";
+      // Use partial match for categories
+      const category = getCategory(name);
       userMarker.setLatLng(center).bindPopup(`${name} - ${category}`).openPopup();
       popupTextKey = "you_are_here";
     })
@@ -96,7 +106,7 @@
       document.getElementById("langSelect").value = lang;
     }
 
-    // Dropdown listener
+    // Language dropdown listener
     document.getElementById("langSelect").addEventListener("change", function() {
       setLanguage(this.value);
     });

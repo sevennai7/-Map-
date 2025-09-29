@@ -31,6 +31,7 @@
   <script>
     let translations = {};
     let currentLang = "en";
+    let locationDenied = false; // track if location was denied
 
     // Map setup
     var map = L.map('map').setView([39.8283, -98.5795], 4);
@@ -39,7 +40,7 @@
     // Marker placeholder
     var userMarker = L.marker([39.8283, -98.5795]).addTo(map);
 
-    // Geocoder with placeholder text that we'll update later
+    // Geocoder with placeholder text
     var geocoder = L.Control.geocoder({
       defaultMarkGeocode: false,
       placeholder: "Loading..."
@@ -51,37 +52,46 @@
     })
     .addTo(map);
 
-    // Load JSON translations
+    // Load translations and set default language
     fetch("languages.json")
       .then(res => res.json())
       .then(data => {
         translations = data;
-        setLanguage("en"); // Default language
-      });
+        setLanguage("en");
+      })
+      .catch(err => console.error("Error loading languages:", err));
 
-    // Change language
+    // Function to change language
     function setLanguage(lang) {
       currentLang = lang;
       const t = translations[lang];
       if (!t) return;
 
-      // Update search box placeholder
+      // Update search placeholder
       geocoder.options.placeholder = t.search_placeholder;
-      document.querySelector(".leaflet-control-geocoder input").placeholder = t.search_placeholder;
+      const searchInput = document.querySelector(".leaflet-control-geocoder input");
+      if (searchInput) searchInput.placeholder = t.search_placeholder;
 
-      // Update marker popup
-      userMarker.bindPopup(t.you_are_here);
+      // Update popup depending on location status
+      if (locationDenied) {
+        userMarker.bindPopup(t.location_denied);
+      } else {
+        userMarker.bindPopup(t.you_are_here);
+      }
 
-      // Update dropdown
+      // Update page title
+      document.title = t.map_title;
+
+      // Update dropdown selection
       document.getElementById("langSelect").value = lang;
     }
 
-    // Language selector event
+    // Handle language dropdown changes
     document.getElementById("langSelect").addEventListener("change", function() {
       setLanguage(this.value);
     });
 
-    // Auto-location if allowed
+    // Try to get user's location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function(position) {
@@ -90,6 +100,7 @@
           userMarker.setLatLng(userLatLng).bindPopup(translations[currentLang]?.you_are_here || "You are here!").openPopup();
         },
         function() {
+          locationDenied = true;
           userMarker.bindPopup(translations[currentLang]?.location_denied || "Location access denied.").openPopup();
         }
       );

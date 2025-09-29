@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>US Map with Search + Auto Location</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Leaflet Geocoder CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Leaflet Geocoder JS -->
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <script>
+    // Start at U.S. center by default
+    var map = L.map('map').setView([39.8283, -98.5795], 4);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add single marker (will move later)
+    var userMarker = L.marker([39.8283, -98.5795]).addTo(map)
+      .bindPopup("Loading location...")
+      .openPopup();
+
+    // Try to detect your real location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        var userLatLng = [lat, lng];
+
+        map.setView(userLatLng, 12); // Zoom to your location
+        userMarker.setLatLng(userLatLng)
+          .bindPopup("You are here!")
+          .openPopup();
+      }, function() {
+        userMarker.bindPopup("Location access denied, showing U.S. center.").openPopup();
+      });
+    } else {
+      userMarker.bindPopup("Geolocation not supported.").openPopup();
+    }
+
+    // Add search box
+    var geocoder = L.Control.geocoder({
+      defaultMarkGeocode: false
+    })
+    .on('markgeocode', function(e) {
+      var center = e.geocode.center;
+      map.setView(center, 12);
+      userMarker.setLatLng(center)
+        .bindPopup(e.geocode.name)
+        .openPopup();
+    })
+    .addTo(map);
+  </script>
+</body>
+  </html>

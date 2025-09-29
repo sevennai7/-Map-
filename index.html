@@ -33,14 +33,17 @@
     let currentLang = "en";
     let popupTextKey = "you_are_here"; // remembers which message to show
 
-    // Map setup
+    // Map setup at center of the world
     var map = L.map('map').setView([0, 0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-    map.flyTo([0, 0], 2);
+    // Animate the map to the center after load
+    setTimeout(() => {
+      map.flyTo([0, 0], 2);
+    }, 500);
 
     // Marker placeholder
-    var userMarker = L.marker([39.8283, -98.5795]).addTo(map);
+    var userMarker = L.marker([0, 0]).addTo(map);
 
     // Geocoder setup
     var geocoder = L.Control.geocoder({
@@ -50,7 +53,7 @@
     .on('markgeocode', function(e) {
       var center = e.geocode.center;
       map.setView(center, 12);
-      popupTextKey = "you_are_here"; // always assume success on search
+      popupTextKey = "you_are_here";
       userMarker.setLatLng(center).bindPopup(translations[currentLang][popupTextKey]).openPopup();
     })
     .addTo(map);

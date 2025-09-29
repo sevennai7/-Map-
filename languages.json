@@ -1,0 +1,14 @@
+{
+  "en": {
+    "search_placeholder": "Search for a place...",
+    "you_are_here": "You are here!",
+    "location_denied": "Location access denied.",
+    "map_title": "My Map"
+  },
+  "de": {
+    "search_placeholder": "Suche nach einem Ort...",
+    "you_are_here": "Du bist hier!",
+    "location_denied": "Standortzugriff verweigert.",
+    "map_title": "Meine Karte"
+  }
+}
